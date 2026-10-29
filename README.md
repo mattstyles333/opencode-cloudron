@@ -13,8 +13,11 @@ This is a community package. It is not affiliated with Cloudron or the OpenCode 
 In the Cloudron dashboard, open **App Store → Community apps**, add this URL and install OpenCode:
 
 ```
-https://github.com/mattstyles333/opencode-cloudron/blob/main/CloudronVersions.json
+https://raw.githubusercontent.com/mattstyles333/opencode-cloudron/main/CloudronVersions.json
 ```
+
+Use this raw URL, including on [ca.cloudron.io](https://ca.cloudron.io). The store fetches it as is
+and rejects GitHub's page link (`github.com/.../blob/...`) as invalid JSON.
 
 Or with the [Cloudron CLI](https://docs.cloudron.io/packaging/cli/):
 
