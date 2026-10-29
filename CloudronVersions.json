@@ -1,0 +1,59 @@
+{
+  "stable": true,
+  "versions": {
+    "1.0.0": {
+      "manifest": {
+        "id": "io.github.mattstyles333.opencode",
+        "title": "OpenCode",
+        "tagline": "Open source AI coding agent, in your browser",
+        "description": "## About\n\n[OpenCode](https://opencode.ai) is an open source AI coding agent. This package runs the OpenCode\nserver with its web UI, so you can plan, write and run code from any browser, with sessions,\nprojects and credentials stored on your Cloudron.\n\n## Features\n\n* Full OpenCode web UI: sessions, diffs, file browser and a built-in terminal\n* Works with Anthropic, OpenAI, Google, OpenRouter, local models and many other providers\n* MCP servers, custom agents, commands, skills and plugins\n* Cloudron login in front of the app (optional), with automatic sign-in to OpenCode\n* Projects live in `/app/data/workspace` and are included in Cloudron backups\n* Ships with git, GitHub CLI, Node.js, Python with uv, ripgrep and fd\n\n## Security\n\nOpenCode can run any command with the permissions of the app. Treat access to this app like shell\naccess to its container, and only grant it to people you trust.",
+        "changelog": "* Initial release with OpenCode 2.2.1",
+        "postInstallMessage": "OpenCode can run arbitrary commands inside this app. Only give access to people you trust.\n\n<sso>\nSign in with your Cloudron account and OpenCode opens straight away.\n</sso>\n\n<nosso>\nOpenCode is protected by its own server password. To read it, open the app's Web Terminal and run:\n\n```\nopencode service get password\n```\n\nThen choose **Use password** on the OpenCode connect screen.\n</nosso>\n\nNext, connect a model provider under **Settings → Providers**, or add API keys to `/app/data/env.sh`\nand restart the app. Put projects in `/app/data/workspace`.",
+        "version": "1.0.0",
+        "upstreamVersion": "2.2.1",
+        "manifestVersion": 2,
+        "minBoxVersion": "9.1.0",
+        "healthCheckPath": "/healthcheck",
+        "httpPort": 8000,
+        "memoryLimit": 2147483648,
+        "addons": {
+          "localstorage": {
+            "sqlite": {
+              "paths": [
+                "/app/data/opencode.db"
+              ]
+            }
+          },
+          "proxyAuth": {}
+        },
+        "optionalSso": true,
+        "checklist": {
+          "connect-provider": {
+            "message": "Connect a model provider: open **Settings → Providers** in the web UI, or put API keys in `/app/data/env.sh` and restart the app."
+          },
+          "server-password": {
+            "sso": false,
+            "message": "Get the server password from the Web Terminal with `opencode service get password`, then choose **Use password** on the OpenCode connect screen."
+          }
+        },
+        "iconUrl": "https://raw.githubusercontent.com/mattstyles333/opencode-cloudron/main/logo.png",
+        "website": "https://opencode.ai",
+        "documentationUrl": "https://opencode.ai/v2/docs/",
+        "packagerName": "mattstyles333",
+        "packagerUrl": "https://github.com/mattstyles333/opencode-cloudron",
+        "tags": [
+          "developer",
+          "ai",
+          "git"
+        ],
+        "mediaLinks": [
+          "https://raw.githubusercontent.com/mattstyles333/opencode-cloudron/main/screenshots/web.png"
+        ],
+        "dockerImage": "ghcr.io/mattstyles333/opencode-cloudron:1.0.0"
+      },
+      "creationDate": "Thu, 29 Oct 2026 13:43:46 GMT",
+      "ts": "Thu, 29 Oct 2026 13:43:46 GMT",
+      "publishState": "published"
+    }
+  }
+}
