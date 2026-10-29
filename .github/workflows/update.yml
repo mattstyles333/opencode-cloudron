@@ -1,0 +1,40 @@
+name: Check for OpenCode updates
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Bump to the latest OpenCode release
+        id: bump
+        run: echo "version=$(node scripts/update-opencode.mjs)" >> "$GITHUB_OUTPUT"
+
+      - name: Open a pull request
+        if: steps.bump.outputs.version != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          upstream=$(jq -r .upstreamVersion CloudronManifest.json)
+          branch="update/opencode-${upstream}"
+          if git ls-remote --exit-code --heads origin "${branch}" >/dev/null; then
+            echo "${branch} already exists"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${branch}"
+          git commit -am "Update OpenCode to ${upstream}"
+          git push origin "${branch}"
+          gh pr create --title "Update OpenCode to ${upstream}" \
+            --body "Bumps OpenCode to ${upstream} and the package to ${VERSION}. Merging publishes the new version to CloudronVersions.json once the build and smoke test pass."
