@@ -1,2 +1,5 @@
+[1.0.1]
+* Health check no longer exposes server details when Cloudron login is off
+
 [1.0.0]
 * Initial release with OpenCode 2.2.1

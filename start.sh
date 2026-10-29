@@ -72,7 +72,6 @@ fi
 
 sed -e "s|##PLATFORM_IPS##|${geo_entries}|" \
     -e "s|##PLATFORM_AUTHORIZATION##|${platform_authorization}|" \
-    -e "s|##BASIC_AUTH##|${basic_auth}|" \
     -e "s|##OPENCODE_PORT##|${OPENCODE_PORT}|g" \
     /app/code/nginx.conf.template > /run/nginx/nginx.conf
 

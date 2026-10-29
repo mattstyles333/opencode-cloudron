@@ -28,7 +28,8 @@ Installed apps pick up new versions from the same URL.
 
 At install time, choose how people reach OpenCode:
 
-* **Cloudron login (recommended).** Cloudron asks users to sign in, with 2FA if enabled, and OpenCode
+* **Cloudron login (recommended).** Visitors first see a small Cloudron page with the app's icon and
+  a **Sign in** button. It takes them to your Cloudron login, with 2FA if enabled, and OpenCode then
   opens without its own password. Only users and groups you allow can get in.
 * **No Cloudron login.** OpenCode asks for its server password. Read it from the Web Terminal with
   `opencode service get password` and choose **Use password** on the connect screen. With this mode
@@ -80,7 +81,8 @@ default gateway, which is where the Cloudron reverse proxy connects from after i
 login. Requests from anywhere else, such as other containers on the Cloudron network, still need the
 OpenCode password. With the Cloudron login off, nginx passes requests through unchanged.
 
-`/healthcheck` answers the Cloudron health checker only.
+`/healthcheck` returns the public web UI shell, so it shows the server is up without exposing
+anything behind the password.
 
 ## Development
 

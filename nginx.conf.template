@@ -38,12 +38,11 @@ http {
     server {
         listen 8000 default_server;
 
+        # Requests through the Cloudron proxy also come from the gateway, so this must not need
+        # credentials. The web UI shell is public and only loads when the server is up.
         location = /healthcheck {
-            if ($from_platform = 0) {
-                return 404;
-            }
-            proxy_pass http://127.0.0.1:##OPENCODE_PORT##/api/info;
-            proxy_set_header Authorization "##BASIC_AUTH##";
+            proxy_pass http://127.0.0.1:##OPENCODE_PORT##/;
+            proxy_set_header Authorization "";
         }
 
         location / {
