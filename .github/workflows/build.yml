@@ -28,11 +28,11 @@ jobs:
         run: |
           version=$(jq -r .version CloudronManifest.json)
           echo "version=${version}" >> "$GITHUB_OUTPUT"
-          if [[ -f CloudronVersions.json ]] && jq -e --arg v "${version}" '.versions[$v]' CloudronVersions.json >/dev/null; then
-            echo "published=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "published=false" >> "$GITHUB_OUTPUT"
-          fi
+          echo "state=$(node scripts/versions.mjs get "${version}")" >> "$GITHUB_OUTPUT"
+          # The newest version users can have installed, to test upgrading from it
+          previous=$(jq -r --arg v "${version}" '[.versions | to_entries[] | select(.key != $v and .value.publishState != "revoked")]
+            | sort_by(.key | split(".") | map(tonumber)) | last | .value.manifest.dockerImage // empty' CloudronVersions.json)
+          echo "previous_image=${previous}" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -47,29 +47,33 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Smoke test
-        run: test/smoke.sh opencode-cloudron:test
+        run: test/smoke.sh opencode-cloudron:test "${{ steps.meta.outputs.previous_image }}"
 
       - name: Log in to GitHub Container Registry
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.meta.outputs.published == 'false'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.meta.outputs.state == ''
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push image and publish version
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.meta.outputs.published == 'false'
+      - name: Push image and add the version as testing
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.meta.outputs.state == ''
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.meta.outputs.version }}
         run: |
           docker tag opencode-cloudron:test "${IMAGE}:${VERSION}"
-          docker tag opencode-cloudron:test "${IMAGE}:latest"
           docker push "${IMAGE}:${VERSION}"
-          docker push "${IMAGE}:latest"
 
-          node scripts/publish-version.mjs "${IMAGE}:${VERSION}"
+          node scripts/versions.mjs add "${IMAGE}:${VERSION}" --state testing
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CloudronVersions.json
-          git commit -m "Publish ${VERSION}"
+          git commit -m "Add ${VERSION} for testing"
           git push
+
+          node scripts/versions.mjs notes "${VERSION}" > notes.md
+          printf '\n\nThis version is in **testing**. Cloudron shows it as unstable until it is released.\n' >> notes.md
+          gh release create "v${VERSION}" --target "$(git rev-parse HEAD)" --prerelease \
+            --title "${VERSION} (OpenCode $(jq -r .upstreamVersion CloudronManifest.json))" --notes-file notes.md

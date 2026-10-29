@@ -13,8 +13,19 @@ source /app/code/opencode-env.sh
 set -u
 
 echo "==> Preparing directories"
-mkdir -p "${HOME}/.local/bin" "${XDG_CONFIG_HOME}/opencode" "${XDG_DATA_HOME}" "${XDG_STATE_HOME}/opencode" \
-    "${OPENCODE_WORKSPACE}" "${XDG_CACHE_HOME}" /run/nginx
+mkdir -p "${HOME}/.local/bin" "${XDG_CONFIG_HOME}/opencode" "${XDG_DATA_HOME}/opencode" "${XDG_STATE_HOME}/opencode" \
+    "${OPENCODE_WORKSPACE}" "${XDG_CACHE_HOME}" /run/opencode/log /run/nginx
+
+# The log file is also streamed to the app log, and reference checkouts are re-cloned on demand,
+# so neither belongs in backups
+for dir in log:/run/opencode/log repos:"${XDG_CACHE_HOME}/repos"; do
+    name="${dir%%:*}" target="${dir#*:}"
+    mkdir -p "${target}"
+    if [[ ! -L "${XDG_DATA_HOME}/opencode/${name}" ]]; then
+        rm -rf "${XDG_DATA_HOME}/opencode/${name}"
+        ln -s "${target}" "${XDG_DATA_HOME}/opencode/${name}"
+    fi
+done
 
 if [[ ! -f "${HOME}/.bashrc" ]]; then
     cat > "${HOME}/.bashrc" <<'EOF'
@@ -72,6 +83,7 @@ fi
 
 sed -e "s|##PLATFORM_IPS##|${geo_entries}|" \
     -e "s|##PLATFORM_AUTHORIZATION##|${platform_authorization}|" \
+    -e "s|##BASIC_AUTH##|${basic_auth}|" \
     -e "s|##OPENCODE_PORT##|${OPENCODE_PORT}|g" \
     /app/code/nginx.conf.template > /run/nginx/nginx.conf
 

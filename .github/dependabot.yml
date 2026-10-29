@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # OpenCode, the base image, gh and uv are handled by the "Check for updates" workflow
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

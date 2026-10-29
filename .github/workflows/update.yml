@@ -1,4 +1,4 @@
-name: Check for OpenCode updates
+name: Check for updates
 
 on:
   schedule:
@@ -6,35 +6,56 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: main
 
-      - name: Bump to the latest OpenCode release
+      - name: Bump OpenCode, base image and tools
         id: bump
-        run: echo "version=$(node scripts/update-opencode.mjs)" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "version=$(node scripts/update-deps.mjs)" >> "$GITHUB_OUTPUT"
 
-      - name: Open a pull request
+      # One rolling pull request, rebuilt from main each day so it never conflicts
+      - name: Open or refresh the pull request
         if: steps.bump.outputs.version != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.bump.outputs.version }}
         run: |
-          upstream=$(jq -r .upstreamVersion CloudronManifest.json)
-          branch="update/opencode-${upstream}"
-          if git ls-remote --exit-code --heads origin "${branch}" >/dev/null; then
-            echo "${branch} already exists"
-            exit 0
-          fi
+          branch=update/dependencies
+          title="Update to ${VERSION} (OpenCode $(jq -r .upstreamVersion CloudronManifest.json))"
+          body=$(printf 'Automated update. Changes:\n\n%s\n\nThe Build run for this branch builds the image and runs the smoke and upgrade tests. Merging adds %s to CloudronVersions.json as **testing**; run the Release workflow to publish it.' \
+            "$(node scripts/versions.mjs notes "${VERSION}")" "${VERSION}")
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "${branch}"
-          git commit -am "Update OpenCode to ${upstream}"
-          git push origin "${branch}"
-          gh pr create --title "Update OpenCode to ${upstream}" \
-            --body "Bumps OpenCode to ${upstream} and the package to ${VERSION}. Merging publishes the new version to CloudronVersions.json once the build and smoke test pass."
+          git checkout -B "${branch}"
+          git commit -qam "${title}"
+
+          if git fetch -q --depth 1 origin "${branch}" 2>/dev/null && git diff --quiet FETCH_HEAD HEAD; then
+            echo "Pull request is already up to date"
+            exit 0
+          fi
+
+          git push --force origin "${branch}"
+          pr=$(gh pr list --head "${branch}" --state open --json number --jq '.[0].number')
+          if [[ -n "${pr}" ]]; then
+            gh pr edit "${pr}" --title "${title}" --body "${body}"
+          else
+            gh pr create --head "${branch}" --title "${title}" --body "${body}"
+          fi
+          # Pull requests opened with GITHUB_TOKEN don't trigger workflows, so start the build directly
+          gh workflow run build.yml --ref "${branch}"

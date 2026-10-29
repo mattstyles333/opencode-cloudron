@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: OpenCode bugs and questions
+    url: https://github.com/anomalyco/opencode/issues
+    about: Problems with OpenCode itself rather than this Cloudron package
+  - name: Security vulnerability
+    url: https://github.com/mattstyles333/opencode-cloudron/security/advisories/new
+    about: Report privately, not as a public issue

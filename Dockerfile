@@ -40,7 +40,8 @@ RUN cd /tmp && \
     rm -rf /tmp/package /tmp/*.tgz /root/.npm
 
 COPY opencode-env.sh opencode-wrapper.sh start.sh nginx.conf.template supervisord.conf env.sh.template /app/code/
-RUN ln -s /app/code/opencode-wrapper.sh /usr/local/bin/opencode && \
+RUN echo ok > /app/code/healthcheck.txt && \
+    ln -s /app/code/opencode-wrapper.sh /usr/local/bin/opencode && \
     HOME=/tmp/build-home /app/code/bin/opencode --version && rm -rf /tmp/build-home
 
 EXPOSE 8000

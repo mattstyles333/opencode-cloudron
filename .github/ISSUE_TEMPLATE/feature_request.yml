@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest an improvement to the Cloudron package
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you'd like to do
+      description: The problem or workflow, not just the solution
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea
+      description: How the package could support it, if you have one

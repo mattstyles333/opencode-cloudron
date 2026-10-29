@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "release: testing -> published. revoke: hide a version from installs and updates"
+        type: choice
+        options: [release, revoke]
+        default: release
+      version:
+        description: "Package version. Leave empty to release the newest testing version"
+        required: false
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/opencode-cloudron
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Update CloudronVersions.json
+        id: catalog
+        env:
+          ACTION: ${{ inputs.action }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ "${ACTION}" == "release" ]]; then
+            version=$(node scripts/versions.mjs promote ${VERSION})
+          else
+            version=$(node scripts/versions.mjs revoke "${VERSION}")
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Check the image is publicly pullable
+        if: inputs.action == 'release'
+        env:
+          VERSION: ${{ steps.catalog.outputs.version }}
+        run: |
+          repository="${IMAGE#ghcr.io/}"
+          token=$(curl -fsSL "https://ghcr.io/token?scope=repository:${repository}:pull" | jq -r .token)
+          curl -fsS -o /dev/null -H "Authorization: Bearer ${token}" \
+            -H "Accept: application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.v2+json" \
+            "https://ghcr.io/v2/${repository}/manifests/${VERSION}"
+
+      - name: Log in to GitHub Container Registry
+        if: inputs.action == 'release'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag the image as latest
+        if: inputs.action == 'release'
+        run: docker buildx imagetools create --tag "${IMAGE}:latest" "${IMAGE}:${{ steps.catalog.outputs.version }}"
+
+      - name: Commit and update the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTION: ${{ inputs.action }}
+          VERSION: ${{ steps.catalog.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CloudronVersions.json
+          if [[ "${ACTION}" == "release" ]]; then
+            git commit -m "Release ${VERSION}"
+            git push
+            node scripts/versions.mjs notes "${VERSION}" > notes.md
+            gh release edit "v${VERSION}" --prerelease=false --latest --notes-file notes.md
+          else
+            git commit -m "Revoke ${VERSION}"
+            git push
+            gh release edit "v${VERSION}" --prerelease \
+              --notes "**Revoked.** This version is no longer offered for installs or updates."
+          fi

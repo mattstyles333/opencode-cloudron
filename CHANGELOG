@@ -1,3 +1,9 @@
+[1.1.0]
+* Health check now confirms the API and database answer, and reveals only up or down
+* OpenCode server logs appear in the Cloudron app log
+* Keep package manager caches, the OpenCode log file and reference repo checkouts out of backups
+* Releases go through a testing stage before they are published
+
 [1.0.1]
 * Health check no longer exposes server details when Cloudron login is off
 

@@ -7,11 +7,15 @@ export XDG_DATA_HOME="${HOME}/.local/share"
 export XDG_STATE_HOME="${HOME}/.local/state"
 # Caches are rebuilt on demand, so keep them out of backups
 export XDG_CACHE_HOME=/run/opencode/cache
+export NPM_CONFIG_CACHE="${XDG_CACHE_HOME}/npm"
+export npm_config_store_dir="${XDG_CACHE_HOME}/pnpm"
+export YARN_CACHE_FOLDER="${XDG_CACHE_HOME}/yarn"
+export BUN_INSTALL_CACHE_DIR="${XDG_CACHE_HOME}/bun"
 
 export OPENCODE_DB=/app/data/opencode.db
 export OPENCODE_DISABLE_AUTOUPDATE=1
 
-# `npm i -g`, `pip install --user` and `uv tool install` all land in ~/.local/bin and persist
+# `npm i -g` and `uv tool install` land in ~/.local/bin and persist
 export NPM_CONFIG_PREFIX="${HOME}/.local"
 export UV_TOOL_BIN_DIR="${HOME}/.local/bin"
 export PATH="${HOME}/.local/bin:/app/code/bin:/usr/local/node/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

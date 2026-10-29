@@ -1,0 +1,47 @@
+name: Bug report
+description: Something in the Cloudron package doesn't work
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Problems with OpenCode itself (models, agents, the web UI) belong in the [OpenCode repository](https://github.com/anomalyco/opencode/issues), unless they only happen in this package.
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version
+      description: Shown in the app's Updates tab in the Cloudron dashboard
+      placeholder: "1.0.1"
+    validations:
+      required: true
+  - type: input
+    id: cloudron-version
+    attributes:
+      label: Cloudron version
+      placeholder: "10.1.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: login
+    attributes:
+      label: Cloudron login
+      description: Chosen when the app was installed
+      options:
+        - On (Cloudron login in front of OpenCode)
+        - Off (OpenCode password)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected and what happened instead
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: App logs
+      description: From the app's Logs view in the Cloudron dashboard. Remove passwords, API keys and anything private.
+      render: text

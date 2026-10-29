@@ -38,11 +38,21 @@ http {
     server {
         listen 8000 default_server;
 
-        # Requests through the Cloudron proxy also come from the gateway, so this must not need
-        # credentials. The web UI shell is public and only loads when the server is up.
+        # Succeeds only when the API answers an authenticated query that reads the database. The
+        # upstream response stays internal, so the endpoint reveals nothing but up or down.
         location = /healthcheck {
-            proxy_pass http://127.0.0.1:##OPENCODE_PORT##/;
-            proxy_set_header Authorization "";
+            auth_request /_healthcheck_upstream;
+            default_type text/plain;
+            alias /app/code/healthcheck.txt;
+        }
+
+        location = /_healthcheck_upstream {
+            internal;
+            proxy_pass http://127.0.0.1:##OPENCODE_PORT##/api/session?limit=1;
+            proxy_pass_request_body off;
+            proxy_set_header Content-Length "";
+            proxy_set_header Authorization "##BASIC_AUTH##";
+            proxy_read_timeout 10s;
         }
 
         location / {
