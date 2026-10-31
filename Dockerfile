@@ -31,7 +31,7 @@ RUN cd /tmp && \
 
 # The baseline build runs on CPUs without AVX2, which some VPS hosts still expose.
 # npm pack verifies the tarball against the registry's integrity hash.
-ARG OPENCODE_VERSION=2.2.1
+ARG OPENCODE_VERSION=2.2.5
 ENV OPENCODE_VERSION=${OPENCODE_VERSION}
 RUN cd /tmp && \
     npm pack --silent @opencode/cli-linux-x64-baseline@${OPENCODE_VERSION} && \

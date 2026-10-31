@@ -1,3 +1,6 @@
+[1.1.1]
+* Update OpenCode to 2.2.5 ([release notes](https://github.com/anomalyco/opencode/releases))
+
 [1.1.0]
 * Health check now confirms the API and database answer, and reveals only up or down
 * OpenCode server logs appear in the Cloudron app log
