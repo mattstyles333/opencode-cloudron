@@ -1,3 +1,8 @@
+[1.2.0]
+* Update OpenCode to 2.3.0 ([release notes](https://github.com/anomalyco/opencode/releases))
+* Update GitHub CLI to 2.104.0
+* Update uv to 0.13.8
+
 [1.1.0]
 * Health check now confirms the API and database answer, and reveals only up or down
 * OpenCode server logs appear in the Cloudron app log
