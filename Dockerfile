@@ -13,7 +13,7 @@ RUN apt-get update && \
     ln -s /usr/bin/fdfind /usr/local/bin/fd && \
     rm -rf /var/cache/apt /var/lib/apt/lists
 
-ARG GH_VERSION=2.103.3
+ARG GH_VERSION=2.104.0
 RUN cd /tmp && \
     curl -fsSLO https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz && \
     curl -fsSL https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_checksums.txt | grep "gh_${GH_VERSION}_linux_amd64.tar.gz" | sha256sum -c - && \
@@ -21,7 +21,7 @@ RUN cd /tmp && \
     install -m 0755 gh_${GH_VERSION}_linux_amd64/bin/gh /usr/local/bin/gh && \
     rm -rf /tmp/gh_*
 
-ARG UV_VERSION=0.13.6
+ARG UV_VERSION=0.13.8
 RUN cd /tmp && \
     curl -fsSLO https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz && \
     curl -fsSL https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz.sha256 | sha256sum -c - && \
@@ -31,7 +31,7 @@ RUN cd /tmp && \
 
 # The baseline build runs on CPUs without AVX2, which some VPS hosts still expose.
 # npm pack verifies the tarball against the registry's integrity hash.
-ARG OPENCODE_VERSION=2.2.1
+ARG OPENCODE_VERSION=2.3.0
 ENV OPENCODE_VERSION=${OPENCODE_VERSION}
 RUN cd /tmp && \
     npm pack --silent @opencode/cli-linux-x64-baseline@${OPENCODE_VERSION} && \
